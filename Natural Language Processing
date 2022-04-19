@@ -1,0 +1,436 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "name": "Week9HW(602)_Diaz_Stefan.ipynb",
+      "provenance": [],
+      "collapsed_sections": [],
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/sdiaz8/sdiaz8/blob/main/Natural%20Language%20Processing\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "YwFo6eKXGv7i"
+      },
+      "outputs": [],
+      "source": [
+        "#import libraries\n",
+        "import numpy as np  \n",
+        "import pandas as pd "
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "#Load data, show first 5 rows, check data, provide information\n",
+        "data = pd.read_csv('/content/train.tsv', delimiter = '\\t') \n",
+        "data.head()"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 206
+        },
+        "id": "1DDMKOeONB__",
+        "outputId": "4347fe2c-42b7-48f1-8011-ac9635847b20"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "   PhraseId  SentenceId                                             Phrase  \\\n",
+              "0         1           1  A series of escapades demonstrating the adage ...   \n",
+              "1         2           1  A series of escapades demonstrating the adage ...   \n",
+              "2         3           1                                           A series   \n",
+              "3         4           1                                                  A   \n",
+              "4         5           1                                             series   \n",
+              "\n",
+              "   Sentiment  \n",
+              "0          1  \n",
+              "1          2  \n",
+              "2          2  \n",
+              "3          2  \n",
+              "4          2  "
+            ],
+            "text/html": [
+              "\n",
+              "  <div id=\"df-c635bf2e-5bcb-4157-b854-cabba1335bd7\">\n",
+              "    <div class=\"colab-df-container\">\n",
+              "      <div>\n",
+              "<style scoped>\n",
+              "    .dataframe tbody tr th:only-of-type {\n",
+              "        vertical-align: middle;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe tbody tr th {\n",
+              "        vertical-align: top;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe thead th {\n",
+              "        text-align: right;\n",
+              "    }\n",
+              "</style>\n",
+              "<table border=\"1\" class=\"dataframe\">\n",
+              "  <thead>\n",
+              "    <tr style=\"text-align: right;\">\n",
+              "      <th></th>\n",
+              "      <th>PhraseId</th>\n",
+              "      <th>SentenceId</th>\n",
+              "      <th>Phrase</th>\n",
+              "      <th>Sentiment</th>\n",
+              "    </tr>\n",
+              "  </thead>\n",
+              "  <tbody>\n",
+              "    <tr>\n",
+              "      <th>0</th>\n",
+              "      <td>1</td>\n",
+              "      <td>1</td>\n",
+              "      <td>A series of escapades demonstrating the adage ...</td>\n",
+              "      <td>1</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>1</th>\n",
+              "      <td>2</td>\n",
+              "      <td>1</td>\n",
+              "      <td>A series of escapades demonstrating the adage ...</td>\n",
+              "      <td>2</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>2</th>\n",
+              "      <td>3</td>\n",
+              "      <td>1</td>\n",
+              "      <td>A series</td>\n",
+              "      <td>2</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>3</th>\n",
+              "      <td>4</td>\n",
+              "      <td>1</td>\n",
+              "      <td>A</td>\n",
+              "      <td>2</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>4</th>\n",
+              "      <td>5</td>\n",
+              "      <td>1</td>\n",
+              "      <td>series</td>\n",
+              "      <td>2</td>\n",
+              "    </tr>\n",
+              "  </tbody>\n",
+              "</table>\n",
+              "</div>\n",
+              "      <button class=\"colab-df-convert\" onclick=\"convertToInteractive('df-c635bf2e-5bcb-4157-b854-cabba1335bd7')\"\n",
+              "              title=\"Convert this dataframe to an interactive table.\"\n",
+              "              style=\"display:none;\">\n",
+              "        \n",
+              "  <svg xmlns=\"http://www.w3.org/2000/svg\" height=\"24px\"viewBox=\"0 0 24 24\"\n",
+              "       width=\"24px\">\n",
+              "    <path d=\"M0 0h24v24H0V0z\" fill=\"none\"/>\n",
+              "    <path d=\"M18.56 5.44l.94 2.06.94-2.06 2.06-.94-2.06-.94-.94-2.06-.94 2.06-2.06.94zm-11 1L8.5 8.5l.94-2.06 2.06-.94-2.06-.94L8.5 2.5l-.94 2.06-2.06.94zm10 10l.94 2.06.94-2.06 2.06-.94-2.06-.94-.94-2.06-.94 2.06-2.06.94z\"/><path d=\"M17.41 7.96l-1.37-1.37c-.4-.4-.92-.59-1.43-.59-.52 0-1.04.2-1.43.59L10.3 9.45l-7.72 7.72c-.78.78-.78 2.05 0 2.83L4 21.41c.39.39.9.59 1.41.59.51 0 1.02-.2 1.41-.59l7.78-7.78 2.81-2.81c.8-.78.8-2.07 0-2.86zM5.41 20L4 18.59l7.72-7.72 1.47 1.35L5.41 20z\"/>\n",
+              "  </svg>\n",
+              "      </button>\n",
+              "      \n",
+              "  <style>\n",
+              "    .colab-df-container {\n",
+              "      display:flex;\n",
+              "      flex-wrap:wrap;\n",
+              "      gap: 12px;\n",
+              "    }\n",
+              "\n",
+              "    .colab-df-convert {\n",
+              "      background-color: #E8F0FE;\n",
+              "      border: none;\n",
+              "      border-radius: 50%;\n",
+              "      cursor: pointer;\n",
+              "      display: none;\n",
+              "      fill: #1967D2;\n",
+              "      height: 32px;\n",
+              "      padding: 0 0 0 0;\n",
+              "      width: 32px;\n",
+              "    }\n",
+              "\n",
+              "    .colab-df-convert:hover {\n",
+              "      background-color: #E2EBFA;\n",
+              "      box-shadow: 0px 1px 2px rgba(60, 64, 67, 0.3), 0px 1px 3px 1px rgba(60, 64, 67, 0.15);\n",
+              "      fill: #174EA6;\n",
+              "    }\n",
+              "\n",
+              "    [theme=dark] .colab-df-convert {\n",
+              "      background-color: #3B4455;\n",
+              "      fill: #D2E3FC;\n",
+              "    }\n",
+              "\n",
+              "    [theme=dark] .colab-df-convert:hover {\n",
+              "      background-color: #434B5C;\n",
+              "      box-shadow: 0px 1px 3px 1px rgba(0, 0, 0, 0.15);\n",
+              "      filter: drop-shadow(0px 1px 2px rgba(0, 0, 0, 0.3));\n",
+              "      fill: #FFFFFF;\n",
+              "    }\n",
+              "  </style>\n",
+              "\n",
+              "      <script>\n",
+              "        const buttonEl =\n",
+              "          document.querySelector('#df-c635bf2e-5bcb-4157-b854-cabba1335bd7 button.colab-df-convert');\n",
+              "        buttonEl.style.display =\n",
+              "          google.colab.kernel.accessAllowed ? 'block' : 'none';\n",
+              "\n",
+              "        async function convertToInteractive(key) {\n",
+              "          const element = document.querySelector('#df-c635bf2e-5bcb-4157-b854-cabba1335bd7');\n",
+              "          const dataTable =\n",
+              "            await google.colab.kernel.invokeFunction('convertToInteractive',\n",
+              "                                                     [key], {});\n",
+              "          if (!dataTable) return;\n",
+              "\n",
+              "          const docLinkHtml = 'Like what you see? Visit the ' +\n",
+              "            '<a target=\"_blank\" href=https://colab.research.google.com/notebooks/data_table.ipynb>data table notebook</a>'\n",
+              "            + ' to learn more about interactive tables.';\n",
+              "          element.innerHTML = '';\n",
+              "          dataTable['output_type'] = 'display_data';\n",
+              "          await google.colab.output.renderOutput(dataTable, element);\n",
+              "          const docLink = document.createElement('div');\n",
+              "          docLink.innerHTML = docLinkHtml;\n",
+              "          element.appendChild(docLink);\n",
+              "        }\n",
+              "      </script>\n",
+              "    </div>\n",
+              "  </div>\n",
+              "  "
+            ]
+          },
+          "metadata": {},
+          "execution_count": 2
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "#distribution of review documents\n",
+        "import matplotlib.pyplot as plt\n",
+        "data['Sentiment'].value_counts().plot.barh()"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 282
+        },
+        "id": "z1CkIz8aftHA",
+        "outputId": "273a656a-8188-496d-9db9-f074dde3bf74"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "<matplotlib.axes._subplots.AxesSubplot at 0x7f8587317bd0>"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 3
+        },
+        {
+          "output_type": "display_data",
+          "data": {
+            "text/plain": [
+              "<Figure size 432x288 with 1 Axes>"
+            ],
+            "image/png": "iVBORw0KGgoAAAANSUhEUgAAAWsAAAD4CAYAAAAqw8chAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAALEgAACxIB0t1+/AAAADh0RVh0U29mdHdhcmUAbWF0cGxvdGxpYiB2ZXJzaW9uMy4yLjIsIGh0dHA6Ly9tYXRwbG90bGliLm9yZy+WH4yJAAANOklEQVR4nO3dbYwd5XnG8f/dtQ0Y0AIBRa6NsiBVRKSugK5IEFFUoaYBg8hXkFqlbSpLTVpBWykyQqrKtzStKho1arBSWtqmEJrQtIJElKRETfpiesybeXNjwG1skThpxZIUqQ3O3Q/zLD67eL1n7TO757b/P2nlOTPnPOeyZ/ba8cycnchMJEmT7cfWOoAkaXmWtSQVYFlLUgGWtSQVYFlLUgHr+hj0/PPPz5mZmT6GlqST0u7du7+XmRcstbyXsp6ZmWEwGPQxtCSdlCLiP4613MMgklSAZS1JBVjWklSAZS1JBVjWklSAZS1JBVjWklSAZS1JBVjWklRAL59g3HNwjpkdD/Ux9FHt//j1q/ZekrQW3LOWpAIsa0kqwLKWpAIsa0kqwLKWpAIsa0kqwLKWpAJGKuuIuDYi9kbEvojY0XcoSdJCy5Z1REwBnwKuAy4Fbo6IS/sOJkk6YpQ96yuBfZn5Umb+H3Af8MF+Y0mSho1S1puBbw09PtDmLRAR2yNiEBGDw6/PjSufJIkxnmDMzJ2ZOZuZs1Mbp8c1rCSJ0cr6IHDh0OMtbZ4kaZWMUtb/BvxERFwUERuAm4C/6zeWJGnYsr8iNTPfiIhfAx4GpoC7M/PZ3pNJkt400u+zzswvAV/qOYskaQl+glGSCrCsJakAy1qSCrCsJakAy1qSCujl7uZbN08z8I7jkjQ27llLUgGWtSQVYFlLUgGWtSQVYFlLUgGWtSQVYFlLUgGWtSQVYFlLUgGWtSQVYFlLUgGWtSQVYFlLUgGWtSQVYFlLUgGWtSQVYFlLUgGWtSQVYFlLUgGWtSQVYFlLUgG93N18z8E5ZnY81MfQx2W/d1qXVJx71pJUgGUtSQVY1pJUgGUtSQVY1pJUgGUtSQWMXNYRMRURT0TEg30GkiS91Ur2rG8Bnu8riCRpaSOVdURsAa4HPtNvHEnS0Yy6Z30n8DHgRz1mkSQtYdmyjogbgEOZuXuZ522PiEFEDA6/Pje2gJKk0fasrwZujIj9wH3ANRHxl4uflJk7M3M2M2enNk6POaYkndqWLevMvC0zt2TmDHAT8A+Z+fO9J5MkvcnrrCWpgBX9itTM/BrwtV6SSJKW5J61JBVgWUtSAZa1JBVgWUtSAZa1JBXQyw1zt26eZuBNaiVpbNyzlqQCLGtJKsCylqQCLGtJKsCylqQCLGtJKsCylqQCLGtJKsCylqQCLGtJKsCylqQCLGtJKsCylqQCLGtJKsCylqQCLGtJKsCylqQCLGtJKsCylqQCLGtJKsCylqQCerm7+Z6Dc8zseKiPodWT/d6NXppo7llLUgGWtSQVYFlLUgGWtSQVYFlLUgGWtSQVYFlLUgHLlnVE3B0RhyLimdUIJEl6q1H2rP8MuLbnHJKkY1i2rDPzH4H/XoUskqQljO2YdURsj4hBRAwOvz43rmElSYyxrDNzZ2bOZubs1MbpcQ0rScKrQSSpBMtakgoY5dK9e4F/AS6JiAMR8eH+Y0mShi37+6wz8+bVCCJJWpqHQSSpAMtakgqwrCWpAMtakgqwrCWpgF7ubr518zQD75YtSWPjnrUkFWBZS1IBlrUkFWBZS1IBlrUkFWBZS1IBlrUkFWBZS1IBlrUkFWBZS1IBlrUkFWBZS1IBlrUkFWBZS1IBlrUkFWBZS1IBlrUkFWBZS1IBlrUkFWBZS1IBlrUkFdDL3c33HJxjZsdDfQytgvZ7p3vphLlnLUkFWNaSVIBlLUkFWNaSVIBlLUkFWNaSVMCyZR0Rp0fEYxHxVEQ8GxF3rEYwSdIRo1xn/b/ANZn5g4hYD3wjIr6cmf/aczZJUrNsWWdmAj9oD9e3r+wzlCRpoZGOWUfEVEQ8CRwCHsnMXf3GkiQNG6msM/NwZl4GbAGujIifXPyciNgeEYOIGBx+fW7cOSXplLaiq0Ey81XgUeDaoyzbmZmzmTk7tXF6XPkkSYx2NcgFEXFOmz4DeD/wQt/BJElHjHI1yCbgnoiYoiv3+zPzwX5jSZKGjXI1yNPA5auQRZK0BD/BKEkFWNaSVIBlLUkFWNaSVIBlLUkF9HLD3K2bpxl4k1RJGhv3rCWpAMtakgqwrCWpAMtakgqwrCWpAMtakgqwrCWpAMtakgqwrCWpAMtakgqwrCWpAMtakgqwrCWpAMtakgqwrCWpAMtakgqwrCWpAMtakgqwrCWpAMtakgqwrCWpgF7ubr7n4BwzOx7qY2hJmkj7P359r+O7Zy1JBVjWklSAZS1JBVjWklSAZS1JBVjWklSAZS1JBSxb1hFxYUQ8GhHPRcSzEXHLagSTJB0xyodi3gB+KzMfj4izgd0R8UhmPtdzNklSs+yedWa+kpmPt+nvA88Dm/sOJkk6YkXHrCNiBrgc2HWUZdsjYhARg8Ovz40nnSQJWEFZR8RZwBeAWzPztcXLM3NnZs5m5uzUxulxZpSkU95IZR0R6+mK+rOZ+UC/kSRJi41yNUgAfwI8n5l/0H8kSdJio+xZXw38AnBNRDzZvrb1nEuSNGTZS/cy8xtArEIWSdIS/ASjJBVgWUtSAZa1JBVgWUtSAZa1JBXQy93Nt26eZtDznX4l6VTinrUkFWBZS1IBlrUkFWBZS1IBlrUkFWBZS1IBlrUkFWBZS1IBlrUkFWBZS1IBkZnjHzTi+8DesQ88PucD31vrEMdgvhNjvhNjvhNzvPnekZkXLLWwl98NAuzNzNmexj5hETEw3/Ez34kx34k5VfN5GESSCrCsJamAvsp6Z0/jjov5Toz5Toz5Tswpma+XE4ySpPHyMIgkFWBZS1IFmTm2L+Bauuur9wE7xjn2Ud7rbuAQ8MzQvPOAR4Bvtj/PbfMD+GTL9TRwxdBrPtSe/03gQ0PzfxrY017zSdohoxXkuxB4FHgOeBa4ZZIyAqcDjwFPtXx3tPkXAbvamJ8DNrT5p7XH+9rymaGxbmvz9wIfGOf2AEwBTwAPTlo+YH/7938SGEzS+m2vPwf4PPAC8Dxw1aTkAy5p/27zX68Bt05Kvvb636D73ngGuJfue2bNtr9xlucU8CJwMbCBrgQuHdf4R3m/9wFXsLCsPzH/lwZ2AL/bprcBX24r/D3ArqFvrJfan+e26fmN47H23GivvW6F+TbNb1DA2cC/A5dOSsb2mrPa9Pq2gb0HuB+4qc3/NPCrbfojwKfb9E3A59r0pW1dn9Y25BfbtjCW7QH4TeCvOFLWE5OPrqzPXzRvItZve/09wK+06Q105T0x+RZ1x7eBd0xKPmAz8DJwxtB294truf2NszyvAh4eenwbcNu4xl/iPWdYWNZ7gU1tehPdh3MA7gJuXvw84GbgrqH5d7V5m4AXhuYveN5xZv1b4P2TmBHYCDwOvJvuk1frFq9T4GHgqja9rj0vFq/n+eeNY3sAtgBfBa4BHmzvN0n59vPWsp6I9QtM05VNTGK+RZl+DvinScpHV9bfovshsK5tfx9Yy+1vnMes5/9y8w60eavp7Zn5Spv+NvD2Nr1UtmPNP3CU+cclImaAy+n2XicmY0RMRcSTdIeTHqH7Sf9qZr5xlDHfzNGWzwFvO47cK3En8DHgR+3x2yYsXwJ/HxG7I2J7mzcp6/ci4LvAn0bEExHxmYg4c4LyDbuJ7jADk5IvMw8Cvw/8J/AK3fa0mzXc/k7aE4zZ/bjKtc4REWcBXwBuzczXhpetdcbMPJyZl9HtwV4JvHOtsiwWETcAhzJz91pnOYb3ZuYVwHXARyPifcML13j9rqM7TPjHmXk58D90hxXetNbbH0BEbABuBP568bK1zBcR5wIfpPuh9+PAmXTHmNfMOMv6IN1JtXlb2rzV9J2I2ATQ/jy0TLZjzd9ylPkrEhHr6Yr6s5n5wCRmBMjMV+lOhl4FnBMR878zZnjMN3O05dPAfx1H7lFdDdwYEfuB++gOhfzhBOWb3/siMw8Bf0P3A29S1u8B4EBm7mqPP09X3pOSb951wOOZ+Z32eFLy/SzwcmZ+NzN/CDxAt02u3fZ3PMeYljjGs47u4P5FHDlg/q5xjb/Ee86w8Jj177Hw5MQn2vT1LDw58Vibfx7dcb1z29fLwHlt2eKTE9tWmC2APwfuXDR/IjICFwDntOkzgK8DN9Dt4QyfQPlIm/4oC0+g3N+m38XCEygv0Z08Gdv2APwMR04wTkQ+uj2ts4em/5luz2si1m97/deBS9r077RsE5OvjXEf8EsT+P3xbrorQTa2198D/Ppabn/jLs9tdFc9vAjcPs6xj/Je99IdS/oh3V7Eh+mOEX2V7hKerwyttAA+1XLtAWaHxvlluktn9i3aaGbpLtl5EfgjVn7Zz3vp/gv3NEcuT9o2KRmBn6K7JO7pNsZvt/kXt418X9swT2vzT2+P97XlFw+NdXvLsJehM+7j2h5YWNYTka/leIojlz7e3uZPxPptr78MGLR1/EW6MpukfGfS7X1OD82bpHx30F32+AzwF3SFu2bbnx83l6QCTtoTjJJ0MrGsJakAy1qSCrCsJakAy1qSCrCsJakAy1qSCvh/SyucPnkHLL8AAAAASUVORK5CYII=\n"
+          },
+          "metadata": {
+            "needs_background": "light"
+          }
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "The sentiment labels are:\n",
+        "\n",
+        "0 - negative,\n",
+        "1 - somewhat negative,\n",
+        "2 - neutral,\n",
+        "3 - somewhat positive,\n",
+        "4 - positive"
+      ],
+      "metadata": {
+        "id": "uNTzIHr7f1Ej"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "#Document Term Matrix\n",
+        "from sklearn.feature_extraction.text import CountVectorizer\n",
+        "cv = CountVectorizer() \n",
+        "vector = cv.fit_transform(data)\n",
+        "print(cv.vocabulary_)\n",
+        "print(vector.toarray())"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "Xq6cR2RGgApW",
+        "outputId": "4d7969b4-043e-4bc9-f82a-ba0b17c9f27f"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "{'phraseid': 1, 'sentenceid': 2, 'phrase': 0, 'sentiment': 3}\n",
+            "[[0 1 0 0]\n",
+            " [0 0 1 0]\n",
+            " [1 0 0 0]\n",
+            " [0 0 0 1]]\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "#import ntlk.tokenize and Split data set using \"Sentiment' for data\n",
+        "from nltk.tokenize import RegexpTokenizer\n",
+        "from sklearn.model_selection import train_test_split\n",
+        "data1 = data.drop('Phrase',axis=1)\n",
+        "x_train, x_test, y_train, y_test = train_test_split(data1, data.Sentiment, test_size = 0.3)"
+      ],
+      "metadata": {
+        "id": "rBBlHx5MiROx"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "#MultinomialNB\n",
+        "from sklearn.naive_bayes import MultinomialNB\n",
+        "from sklearn.metrics import accuracy_score\n",
+        "clf = MultinomialNB()\n",
+        "clf.fit(x_train, y_train)\n",
+        "y_pred=clf.predict(x_test)\n",
+        "accuracy_score(y_test, y_pred)"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "zLzr2wpEkafK",
+        "outputId": "4bcb5384-983d-4386-eb84-40787a191bbc"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "0.54079627493699"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 6
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "#TfidVectorized Data\n",
+        "from sklearn.feature_extraction.text import TfidfVectorizer\n",
+        "vectorizer = TfidfVectorizer()\n",
+        "vectored = vectorizer.fit_transform(data.Phrase)\n",
+        "vectored"
+      ],
+      "metadata": {
+        "id": "tpA4wDy03Jy8",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "outputId": "ff36490e-033c-4b56-8cec-dd292d8ffa25"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "<156060x15240 sparse matrix of type '<class 'numpy.float64'>'\n",
+              "\twith 972099 stored elements in Compressed Sparse Row format>"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 7
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "#Transform data and split it to training and test data\n",
+        "x_train, x_test, y_train, y_test = train_test_split(vectored, data.Sentiment, test_size = 0.3)\n",
+        "\n",
+        "#Fit Model Using TfidVectoredData\n",
+        "clf.fit(x_train, y_train)\n",
+        "y_pred=clf.predict(x_test)\n",
+        "accuracy_score(y_test, y_pred)"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "7lGEU-bd4fVc",
+        "outputId": "3f330b71-f34b-4ea8-c456-624eb4047340"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "0.5818702208552267"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 9
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "Using the transformed data is more accuarte (58.19%) than the untransformed data (54.09%)."
+      ],
+      "metadata": {
+        "id": "A_Ju0amsL-Ng"
+      }
+    }
+  ]
+}
